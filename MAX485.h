@@ -20,17 +20,21 @@
 
 #include "Arduino.h"
 
+enum class Rs485Role {
+  Master, Slave
+};
+
 class MAX485
 {
-  public:
-    MAX485(int pinRE, int pinDE);
-    void setMaster();
-	boolean isMaster();
-    void setSlave();
-	boolean isSlave();
+public:
+  MAX485(int pinTE);
+  MAX485(int pinRE, int pinDE);
+  void initialize(const Rs485Role& role = Rs485Role::Slave);
+  void set(const Rs485Role& role);
+  boolean is(const Rs485Role& role);
 	void sending(boolean setCarrier);
-  private:
-    int _pinRE;
+private:
+  int _pinRE;
 	int _pinDE;
 };
 

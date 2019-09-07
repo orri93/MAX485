@@ -19,53 +19,48 @@
 #include "Arduino.h"
 #include "MAX485.h"
 
-MAX485::MAX485(int pinRE, int pinDE)
-{
-	pinMode(pinRE, OUTPUT);
-	pinMode(pinDE, OUTPUT);
-	_pinRE = pinRE;
-	_pinDE = pinDE;
-	// Default to Slave-Mode, receiving
-	setSlave();
+MAX485::MAX485(int pinTE) :
+  MAX485(pinTE, pinTE) {
+}
+
+MAX485::MAX485(int pinRE, int pinDE) :
+  _pinRE(pinRE),
+	_pinDE(pinDE) {
+}
+
+void MAX485::initialize(const Rs485Role& role) {
+	pinMode(_pinRE, OUTPUT);
+	if(_pinRE != _pinDE) {
+	  pinMode(_pinDE, OUTPUT);
+	}
+	set(role);
 	sending(false);
 }
 
-void MAX485::setMaster()
-{
-	digitalWrite(_pinRE, HIGH);
-}
-
-boolean MAX485::isMaster()
-{
-	if (digitalRead(_pinRE))
-	{
-		return true;
-	} else {
-		return false;
+void MAX485::set(const Rs485Role& role) {
+	switch(role) {
+	case Rs485Role::Master:
+		digitalWrite(_pinRE, HIGH);
+		break;
+	case Rs485Role::Slave:
+	  digitalWrite(_pinRE, LOW);
+		break;
 	}
 }
 
-void MAX485::setSlave()
+boolean MAX485::is(const Rs485Role& role)
 {
-	digitalWrite(_pinRE, LOW);
-}
-
-boolean MAX485::isSlave()
-{
-	if (digitalRead(_pinRE))
-	{
-		return false;
-	} else {
-		return true;
+	switch(role) {
+	case Rs485Role::Master:
+		return digitalRead(_pinRE) == HIGH;
+	case Rs485Role::Slave:
+	  return digitalRead(_pinRE) == LOW;
+	default:
+	  return false;
 	}
 }
 
 void MAX485::sending(boolean setCarrier)
 {
-	if (setCarrier)
-	{
-		digitalWrite(_pinDE, HIGH);
-	} else {
-		digitalWrite(_pinDE, LOW);
-	}
+	digitalWrite(_pinDE, setCarrier ? HIGH : LOW);
 }
